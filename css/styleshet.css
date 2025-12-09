@@ -1,0 +1,256 @@
+﻿:root {
+    --gold: #cc9744;
+    --tan: #f7e8c8;
+    --brown: #3c2a12;
+    --shadow: 0 10px 18px rgba(0, 0, 0, 0.18);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: "Trebuchet MS", "Segoe UI", Verdana, sans-serif;
+    color: var(--brown);
+    background: linear-gradient(135deg, #62bfd4 0%, #f1dd76 100%);
+    min-height: 100vh;
+}
+
+a {
+    color: inherit;
+}
+
+.page {
+    position: relative;
+    min-height: 100vh;
+    padding-bottom: 32px;
+    overflow-x: hidden;
+}
+
+.page::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    opacity: 0.5;
+    z-index: 0;
+    pointer-events: none;
+    transform: rotate(90deg) scale(1.1);
+}
+
+.navbar {
+    position: sticky;
+    top: 8px;
+    z-index: 20;
+    max-width: 1180px;
+    margin: 16px auto 0;
+    background: var(--gold);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 18px 10px 14px;
+    border-radius: 46px;
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.25);
+    backdrop-filter: blur(4px);
+}
+
+.logo img {
+    width: 78px;
+    height: auto;
+    display: block;
+}
+
+.nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.nav-btn {
+    background: var(--tan);
+    color: var(--brown);
+    padding: 10px 22px;
+    border-radius: 14px;
+    text-decoration: none;
+    font-weight: 800;
+    letter-spacing: 0.2px;
+    box-shadow: 0 4px 0 #b77322, var(--shadow);
+    transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
+}
+
+.nav-btn:hover,
+.nav-btn:focus-visible {
+    background: #ffd26a;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0 #a55f16, 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.nav-btn:active {
+    transform: translateY(1px);
+    box-shadow: 0 2px 0 #8d4d0c, 0 6px 12px rgba(0, 0, 0, 0.18);
+}
+
+.nav-btn.active {
+    background: #ffe59d;
+}
+
+.background {
+    position: absolute;
+    left: 50%;
+    top: -104px; /* position the background so its center aligns near navbar */
+    transform: translateX(-50%);
+    width: 2000px;
+    max-width: 1180px;
+    z-index: 5; /* below navbar (which has z-index:20) */
+    pointer-events: none;
+}
+
+.matematika-bg-2-container {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 900px;
+    width: 100%;
+    z-index: 1;
+    pointer-events: none;
+    overflow: visible;
+}
+
+.matematika-bg-2 {
+    position: absolute;
+    right: -200px;
+    width: 3000px;
+    top: -900px;
+    height: auto;
+    z-index: 1; /* behind other elements */
+    pointer-events: none;
+    opacity: 0.2;
+}
+
+.background img {
+    display: block;
+    width: 100%;
+    height: auto;
+    transform: translateY(0);
+    user-select: none;
+}
+
+.background-atas {
+    position: absolute;
+    right: -50px;
+    top: -350px;
+    width: 200px;
+    height: auto;
+    transform: rotate(20deg);
+}
+
+.background-pingir {
+    position: absolute;
+    right: 1000px;
+    top: 100px;
+    rotate: -60deg;
+    width: 100px;
+    height: auto;
+    transform: scaleX(-1); /* flip horizontally */
+}
+
+.Tangga {
+    position: absolute;
+    right: -950px;
+    top: -50px;
+    height: auto;
+}
+
+.background-pingir-2 {
+    position: absolute;
+    left: -1100px;
+    bottom: -700px;
+    rotate: -450deg;
+    width: 100px;
+    height: auto;
+}
+
+.text-background {
+    position: absolute;
+    left: 50%;
+    top: -500px;
+    transform: translate(-50%, -50%);
+    font-size: 180px;
+    font-weight: 800;
+    color: rgba(255, 255, 255, 0.15);
+    white-space: nowrap;
+    pointer-events: none;
+    user-select: none;
+    z-index: 5;
+}
+
+.branch-latar-belakang {
+    position: absolute;
+    left: -950px;
+    top: 1200px;
+    height: auto;
+    width: 900px;
+}
+
+.bg-text-latar-belakang {
+    position: absolute;
+    top: 2030px;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 180px;
+    font-weight: 800;
+    color: rgba(255, 255, 255, 0.15);
+    white-space: nowrap;
+    pointer-events: none;
+    user-select: none;
+}
+
+.branch-cara-bermain {
+    position: absolute;
+    top: 2000px;
+    right: 5px;
+    width: 800px;
+}
+
+.bg-text-cara-bermain {
+    position: absolute;
+    top: 2200px;
+    right: -50px;
+    width: 2010px;
+    font-size: 180px;
+    font-weight: 800;
+    color: rgba(255, 255, 255, 0.15);
+    white-space: nowrap;
+    pointer-events: none;
+    user-select: none;
+}
+
+.text-background-cara-bermain {
+    position: absolute;
+    left: 100%;
+    top: -40px;
+    transform: translate(-50%, -50%);
+    font-size: 180px;
+    font-weight: 800;
+    color: rgba(255, 255, 255, 0.15);
+    white-space: nowrap;
+    pointer-events: none;
+    user-select: none;
+    z-index: 5;
+}
+
+.bawah-home {
+    position: relative;
+    width: 100%;
+    min-height: 100dvh;
+    background-color: #62bfd4;
+}
+.bawah {
+    position: absolute;
+    left: 50%;
+    bottom: -3000px;
+    transform: translateX(-50%);
+    width: 2300px;
+    height: 1000px;
+    pointer-events: none;
+}
