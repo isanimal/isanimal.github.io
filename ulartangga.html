@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ular Tangga Matematika Hewan</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Roboto:wght@700&display=swap');
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            /* background: #e0f7fa; */
+            background: linear-gradient(to bottom right, #62bfd4, #f1dd76);
+            /* background-size: 20px 20px; */
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden; /* Mencegah scroll saat modal muncul */
+        }
+
+        h1 {
+            font-family: 'Fredoka One', cursive;
+            font-size: 32px;
+            margin: 10px 0;
+            color: #006064;
+            text-shadow: 2px 2px 0px #fff;
+        }
+
+        .game-wrapper {
+            position: relative;
+            background: rgba(255,255,255,0.9);
+            padding: 15px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transform: scale(0.95); /* Sedikit diperkecil agar muat di layar laptop standar */
+        }
+
+        /* Container Papan */
+        .board-container {
+            position: relative;
+            width: 490px;
+            height: 350px;
+            border: 4px solid #455a64;
+            background-color: #8bc34a;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            overflow: hidden; /* Agar token tidak keluar border */
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(7, 70px);
+            grid-template-rows: repeat(5, 70px);
+        }
+
+        .cell {
+            width: 70px;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 16px;
+            color: rgba(0,0,0,0.4);
+            position: relative;
+            box-sizing: border-box;
+            border: 0.5px solid rgba(0,0,0,0.05);
+            z-index: 0;
+        }
+
+        .row-odd:nth-child(odd) { background-color: #dce775; }
+        .row-odd:nth-child(even) { background-color: #aed581; }
+        .row-even:nth-child(odd) { background-color: #ffcc80; }
+        .row-even:nth-child(even) { background-color: #689f38; }
+        .start-cell { background-color: #8bc34a !important; color: #fff !important; }
+
+        /* SVG Overlay (Ular & Tangga) */
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* PION BINATANG */
+        .token {
+            width: 28px;
+            height: 28px;
+            font-size: 22px;
+            position: absolute;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.5));
+            transition: top 0.5s cubic-bezier(0.25, 1, 0.5, 1), left 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+            
+            /* Posisi Awal (Hidden) */
+            top: 290px; left: 10px; 
+        }
+
+        /* UI Panel Bawah */
+        .controls {
+            display: flex;
+            align-items: center;
+            background: #fff;
+            padding: 10px 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            justify-content: space-between;
+        }
+
+        .dice-box {
+            width: 60px;
+            height: 60px;
+            background: #fff;
+            border: 3px solid #333;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            cursor: pointer;
+            box-shadow: 4px 4px 0 #333;
+            user-select: none;
+            transition: all 0.1s;
+        }
+        .dice-box:active { transform: scale(0.9); box-shadow: 2px 2px 0 #333; }
+        
+        .info-panel {
+            text-align: left;
+            margin-left: 20px;
+            flex-grow: 1;
+        }
+
+        .turn-text { font-size: 18px; font-weight: bold; color: #555; }
+        .turn-highlight { font-weight: 900; font-size: 20px; }
+
+        /* Animasi Kocok */
+        .shaking { animation: shake 0.3s infinite; background: #fff176; }
+        @keyframes shake {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(10deg); }
+            50% { transform: rotate(-10deg); }
+            75% { transform: rotate(5deg); }
+            100% { transform: rotate(0deg); }
+        }
+
+        /* --- MODAL QUIZ & SUCCESS --- */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-box {
+            background: white;
+            padding: 25px;
+            border-radius: 20px;
+            text-align: center;
+            width: 320px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            animation: zoomIn 0.3s ease;
+            position: relative;
+        }
+
+        .quiz-animal { font-size: 50px; display: block; margin-bottom: 10px; }
+        .quiz-question { font-size: 36px; font-weight: bold; color: #333; margin: 15px 0; font-family: 'Fredoka One'; }
+        
+        .quiz-input {
+            padding: 10px;
+            font-size: 24px;
+            width: 100px;
+            text-align: center;
+            border: 3px solid #ccc;
+            border-radius: 10px;
+            outline: none;
+        }
+        .quiz-input:focus { border-color: #2196F3; }
+
+        .btn-submit {
+            display: block;
+            width: 100%;
+            margin-top: 20px;
+            padding: 12px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #2e7d32;
+        }
+        .btn-submit:active { transform: translateY(2px); box-shadow: 0 0 0; }
+
+        #error-msg {
+            color: #f44336;
+            font-weight: bold;
+            margin-top: 10px;
+            min-height: 20px;
+            font-size: 14px;
+        }
+
+        /* Success Popup khusus */
+        .success-box {
+            background: #fff;
+            padding: 30px;
+            border-radius: 50%;
+            width: 150px;
+            height: 150px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 30px #4CAF50;
+            animation: bounceIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .success-icon { font-size: 60px; margin-bottom: 10px; }
+        .success-text { font-weight: bold; font-size: 20px; color: #2e7d32; }
+
+        @keyframes zoomIn { from {transform: scale(0.5); opacity: 0;} to {transform: scale(1); opacity: 1;} }
+        @keyframes bounceIn { 
+            0% { transform: scale(0); } 
+            60% { transform: scale(1.1); } 
+            100% { transform: scale(1); }
+        }
+
+    </style>
+</head>
+<body>
+
+    <h1>ULAR TANGGA MATEMATIKA</h1>
+
+    <div class="game-wrapper">
+        <div class="board-container">
+            <div id="p0" class="token">
+                <svg xmlns="http://www.w3.org/2000/svg" width="800" height="800" aria-hidden="true" class="iconify iconify--noto" viewBox="0 0 128 128"><path fill="#ffd2b1" d="M14.72 40.48s-10.98 19.29-10 35.76 5.35 20.55 15.77 25.48 10.56-49.55 10.56-49.55zM112.84 37.95 98.39 54s2.35 48.85 4.74 49.27 14.5-4.79 18.3-12.53 2.14-20.7 1.27-25.2c-1.69-8.73-9.86-27.59-9.86-27.59"/><path fill="#ff8e01" d="M64.23 8.81c-10.42-.13-20.08 3.24-20.08 3.24S26.69-.62 14.86 9.51C.09 22.18 13.17 40.76 14.3 42.03s6.19 13.23 6.19 13.23-3.1 12.11-3.24 20.55c-.2 11.84 2.39 25.53 2.39 25.53s4.93 2.21 9.43 3.75c3.62 1.24 5.91 1.55 7.18 2.53 1.27.99 9.43 12.39 19.01 13.94 8.45 1.37 21.96.42 29.28-7.32 5.61-5.93 6.76-7.46 7.74-8.02.99-.56 13.33-3.33 13.33-3.33s4.27-20.74 4.27-29.75-1.13-16.19-1.13-16.19l4.79-12.39s15.49-19.85 1.27-31.96c-13.09-11.15-27.87.84-27.87.84S75.49 8.95 64.23 8.81"/><path fill="#ff6011" d="M19.08 16.41c8.45-7.34 15.63-.14 15.63.56 0 .34-4.92 3.23-8.87 6.9-4.2 3.9-7.45 8.59-7.88 8.59-.85 0-6.34-9.57 1.12-16.05M109.47 18.38c-5.2-4.79-13.66-.7-13.94 0-.14.35 4.5 3.55 8.02 7.04 3.65 3.62 6.75 7.67 7.04 7.74.56.14 5.91-8.3-1.12-14.78"/><path fill="#ffd2b1" d="M39.78 87.36s-.29 28.59 22.81 27.87c27.17-.84 23.51-26.61 23.51-26.61z"/><path fill="#fea7a5" d="M63.43 81.17s-18.58 9.71-18.44 9.15c.07-.27 4.63 3.25 9.38 7 5.19 4.1 18.76 1.14 18.76 1.14l8.89-8.01z"/><path fill="#fff" d="M64.56 64.13s-22.52-10.84-30.13-.28 0 21.4 5.35 23.51 13.8 9.43 13.8 9.43 1.41-2.96 1.27-4.36c-.14-1.41-1.13-5.77-1.13-5.77l9.71-5.49 7.88 7.18s-1.13 7.18-.56 8.02 4.93-.99 4.93-.99l2.25-7.04s5.4-.33 8.92-.75 10.93-5.3 10.09-13.89-8.59-13.51-14.5-13.37c-5.92.14-17.88 3.8-17.88 3.8"/><path fill="#2f2f2f" d="M90.88 86.66c-.58-1.44-10.14-1.83-16.33-5.49-6.5-3.84-6.05-8.31-6.05-8.31s4.68-2.39 8.87-5.49 7.79-6.84 6.62-8.87c-2.77-4.79-11.54 1.55-19.85 1.13-8.03-.41-18.61-5.28-20.41-2.67-1.9 2.75 1.85 7.02 6.34 10.28s9.71 5.49 9.71 5.49 0 5.63-7.18 8.73c-8.02 3.46-15.58 3.24-16.05 3.66-1.41 1.27.53 2.66 2.11 3.24 1.55.56 3.24.56 3.24.56s1.27 10.98 21.54 11.4c19.71.41 20.41-9.85 20.41-9.85s1.97-.42 3.84-1.11 3.61-1.65 3.19-2.7m-27.73 9.01c-11.68-.14-15.63-5.49-15.63-5.49s4.36 0 7.46-.7c3.83-.87 8.31-4.65 8.31-4.65s3.65 3.84 6.76 4.93c2.82.99 8.02 1.55 8.02 1.55s-3.24 4.5-14.92 4.36M47.94 41.61c0 3.46-2.98 6.33-6.48 6.9-3.45.56-6.62-2.46-6.48-7.04.11-3.46 3.08-5.63 6.62-5.63s6.34 2.04 6.34 5.77M86.94 48.23c-3.28-1.11-5.25-3.92-4.42-7.9.9-4.35 3.94-6.09 8.22-4.49 3.24 1.21 4.76 5.31 3.73 8.69-.91 2.99-4 4.89-7.53 3.7M102.05 41.14c-1.37 1.55-5.2.34-5.73 2.44-.75 3 7.23 5.63 10.14 1.78s-.37-12.43-3.1-10.61c-1.68 1.13.1 4.79-1.31 6.39"/><path fill="#2f2f2f" d="M109.47 38.32c-1.06.43.19 3.85.66 6.48s0 7.04-1.5 8.82-2.91 1.31-2.91 1.31-3.56-6.42-5.44-3.85c-1.78 2.44 2.06 2.82 1.6 7.6-.47 4.79-3.78 7.17-.38 7.88 1.78.38 3.57-2.91 3.57-2.91s5.82.09 8.73-6.76c2.19-5.15.84-9.01-.19-12.95s-3.68-5.8-4.14-5.62M110.03 69.2c-3.57 3.94-8.82 8.35-9.2 9.48s-.38 3.75 4.79 2.91 10.04-5.63 11.59-8.59c2.03-3.87 2.77-10.37 1.64-12.72s-3.19-1.22-3.85.75c-.65 1.98-3.61 6.67-4.97 8.17M28.56 38.79c-.09-2.35 2.25-4.41.84-5.63-1.87-1.62-6.95 2.82-5.35 8.17s7.92 4.69 8.96 3.85c1.74-1.41.46-2.66-.47-3.1-1.44-.68-3.89-1-3.98-3.29"/><path fill="#2f2f2f" d="M23.87 52.59s2.16-3.57 3.94-2.06c1.78 1.5-2.16 4.04-1.69 8.35s2.91 7.51 1.69 8.73c-1.69 1.69-4.32-1.88-5.16-3.19s-1.41-3.1-1.41-3.1-5.82-4.79-6.85-10.7c-.8-4.57.47-9.85 3.28-12.39 1.92-1.73 2.89-1.71 3.66-.94 1.13 1.13-1.88 5.63-.84 10.04 1.03 4.42 3.38 5.26 3.38 5.26M19.84 69.67c-2.58-3.22-7.18-10.77-8.92-10.14-2.06.75-1.69 10.53 3.19 16.14 6.19 7.13 14.17 7.04 15.11 4.13.69-2.14-4.88-4.5-9.38-10.13M58.36 9.02s.7 5.07-4.86 6.69-8.94-.44-8.73 4.08c.11 2.25 2.51 3.37 4.93 3.52s4.82-.75 6.12-1.27c2.82-1.13 7.32-6.69 8.09-6.83s3.17 3.8 8.02 5.91c2.22.96 5.04 1.77 7.2 1.48 2.27-.3 4.17-1.83 3.99-4.79-.12-2.24-3.36-1.12-8.71-2.81s-4.6-5.82-4.6-5.82-3.99-.38-5.96-.38c-1.97.01-5.49.22-5.49.22"/><path fill="#2f2f2f" d="M64.2 20c-1.1-.02-3.73 3.52-6.19 4.72s-7.74 1.48-8.38 3.73c-.63 2.25 1.34 4.93 6.69 4.22 5.54-.73 7.39-5.07 8.09-5.14s2.96 5.07 9.01 5.56c5.21.42 6.64-4.01 5-5.49-2.25-2.04-6.26-2.53-8.24-3.45-2.34-1.09-4.99-4.13-5.98-4.15"/></svg>
+            </div>
+            <div id="p1" class="token">
+                <svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" width="800" height="800" viewBox="0 0 511.988 511.988"><path d="m375.612 108.566-2.719-20.703a10.7 10.7 0 0 0-2.062-5.016L321.49 17.256a10.66 10.66 0 0 0-8.422-4.25c-3.327-.078-6.452 1.469-8.499 4.094l-18.765 23.984a10.67 10.67 0 0 0-1.375 10.844l23.078 52.748a10.68 10.68 0 0 0 7.671 6.187l47.779 9.546c.688.141 1.406.219 2.094.219 2.688 0 5.296-1.016 7.28-2.891a10.57 10.57 0 0 0 3.281-9.171" style="fill:#f6bb42"/><path d="M494.701 189.61a11.2 11.2 0 0 0-2.688-2.406l-44.498-27.921-46.717-34.405-7.859-31.452a10.65 10.65 0 0 0-6.828-7.484c-1.469-.516-36.592-12.64-72.746-12.64-.969 0-1.953 0-2.938.031-26.671.5-61.529 16.983-75.497 24.186l-67.575-49.653c-3.671-2.719-8.671-2.766-12.421-.156a10.65 10.65 0 0 0-4.124 11.718l14.062 48.357a10.65 10.65 0 0 0 2.968 4.828l29.421 27.374c-10.234 9.859-29.03 28.874-53.654 57.748C81.53 270.544 32.064 347.962 1.503 400.086a10.67 10.67 0 0 0-1.094 8.171 10.62 10.62 0 0 0 5.031 6.5l168.805 95.84a10.65 10.65 0 0 0 5.25 1.391c1.375 0 2.75-.266 4.046-.797a10.7 10.7 0 0 0 6.219-6.953c38.732-136.197 78.168-218.226 91.699-244.411 11.219 4.562 26.5 6.796 46.217 6.796 38.249 0 81.669-8.452 93.653-10.937l33.342 12.515c1.406.531 2.906.766 4.406.672l35.826-2.203c3.733-.219 7.077-2.406 8.812-5.733.844-1.625 8.234-16.328 8.234-32.156.001-16.938-15.498-36.937-17.248-39.171" style="fill:#ffce54"/><path d="M330.442 149.314c0 5.89-4.781 10.656-10.671 10.656-5.891 0-10.655-4.766-10.655-10.656s4.765-10.671 10.655-10.671 10.671 4.781 10.671 10.671" style="fill:#434a54"/><path d="M338.957 89.551 274.991 4.273a10.7 10.7 0 0 0-7.781-4.25 10.75 10.75 0 0 0-8.312 3.109l-21.312 21.327a10.655 10.655 0 0 0-2.266 11.75l5.593 13.031c.109.266.25.531.391.781l14.484 27.296v29.327a10.656 10.656 0 0 0 10.672 10.671c5.874 0 10.655-4.766 10.655-10.671v-1.781l41.468-6.938 3.312 4.422c3.53 4.703 10.217 5.672 14.92 2.125 4.72-3.531 5.673-10.218 2.142-14.921" style="fill:#ffce54"/><path d="M205.995 175.641c-5.016-12.155-10.688-23.546-14.187-30.311-10.844 10.749-27.468 28.077-48.201 52.404-15.812 18.546-30.796 37.404-44.874 56.045a10.65 10.65 0 0 0 6.453 2.187c.375 0 .734-.031 1.094-.062.875-.094 21.437-2.234 44.108-5.937 42.764-6.984 54.138-13.031 59.278-17.515 10.031-8.766 8.891-26.281-3.671-56.811M243.086 345.727c12.859-32.388 23.905-56.56 31.639-72.434-6.531-4.812-26.967-18.687-45.389-18.687-2.938 0-5.766.343-8.374 1.031-2.859.75-7.359 1.813-12.578 3.063-13.875 3.296-34.843 8.296-52.295 13.687-27.42 8.484-37.623 14.968-38.998 24.765-.844 6.141 2.469 11.422 9.875 15.719 3.578 2.094 8.5 4.25 15.031 6.625 10.155 3.686 24.311 7.889 42.092 12.482 25.718 6.641 51.888 12.249 58.997 13.749M52.594 378.758c22.546 31.233 32.155 37.499 40.342 37.515 4.656 0 8.796-2.266 11.343-6.203 6.984-10.749 8.656-33.046 9.046-42.123.5-11.562.359-32.577-6.171-43.483-6.156-10.264-16.515-36.076-19.984-45.153-.75-1.969-2.062-3.625-3.734-4.844-18.999 26.202-36.061 51.606-50.873 74.855 3.875 6.03 11.516 17.655 20.031 29.436M201.401 360.399c-31.718-18.125-43.014-20.218-48.749-20.218-5.624 0-9.124 2.218-11.062 4.077-2.812 2.703-6.375 7.844-9.062 23.75-1.578 9.39-2.547 20.796-2.719 32.093-.375 25.858 3.062 42.686 10.218 50.014 2.906 2.969 11.733 11.999 49.951 11.999 5.046 0 9.39-.156 12.39-.312 9.703-31.326 19.281-59.201 28.28-83.606-4.592-2.97-16.201-10.344-29.247-17.797" style="fill:#fc6e51"/><path d="M255.789 87.723a319 319 0 0 0-20.858 9.796l20.858 9.125zM236.618 240.826l40.576 27.452 4.266-8.452zM458.266 235.154l46.997 22.531 4.718-13.796zM494.701 189.61a11.2 11.2 0 0 0-2.688-2.406l-12.218-7.656c0 .016-.219 27.702 26.607 28.827-4.639-9.656-10.638-17.422-11.701-18.765" style="fill:#f6bb42"/></svg>
+            </div>
+            <div id="p2" class="token">
+                <svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" width="800" height="800" viewBox="0 0 512 512"><path d="M144.696 61.218c-44.01 0-82.052 25.542-100.116 62.61L5.591 203.84C2.01 211.19 0 219.447 0 228.174c0 14.195 5.314 27.148 14.061 36.979l52.84 59.386c8.155 9.166 20.04 14.939 33.273 14.939a44.33 44.33 0 0 0 28.105-9.991l86.68-70.639c25.046-20.41 41.04-51.501 41.04-86.327C256 111.05 206.167 61.218 144.696 61.218" style="fill:#848075"/><path d="M144.696 61.218c-44.01 0-82.052 25.542-100.116 62.61L5.591 203.84a55.4 55.4 0 0 0-3.111 7.913l31.029 34.874a44.65 44.65 0 0 0 14.59 10.841q.356.164.75.323c9.218 3.702 19.483-2.323 21.186-12.11.732-4.211 1.486-8.169 2.18-11.807 4.5-23.608 12.525-47.781 23.207-69.906l.163-.332c14.145-28.227 33.687-51.714 47.59-66.445a172 172 0 0 1 11.211-10.857c9.852-8.701 3.836-25.071-9.308-25.116z" style="fill:#989487"/><path d="M367.304 61.218c44.01 0 82.052 25.542 100.116 62.61l38.989 80.011A55.4 55.4 0 0 1 512 228.175c0 14.195-5.314 27.148-14.061 36.979l-52.84 59.386c-8.155 9.166-20.04 14.939-33.273 14.939a44.33 44.33 0 0 1-28.105-9.991l-86.68-70.639c-25.046-20.41-41.04-51.501-41.04-86.327C256 111.05 305.833 61.218 367.304 61.218" style="fill:#706b63"/><path d="M367.304 61.218c44.01 0 82.052 25.542 100.116 62.61l38.989 80.011a55.4 55.4 0 0 1 3.111 7.913l-31.029 34.874a44.65 44.65 0 0 1-14.59 10.841q-.356.164-.75.323c-9.218 3.702-19.483-2.323-21.186-12.11-.732-4.211-1.487-8.169-2.18-11.807-4.5-23.608-12.525-47.781-23.207-69.906l-.163-.332c-14.145-28.227-33.687-51.714-47.59-66.445a172 172 0 0 0-11.211-10.857c-9.852-8.701-3.836-25.071 9.308-25.116zM414.397 234.609c-6.455-31.015-19.588-60.239-37.722-86.214-22.682-32.492-26.124-35.812-37.355-45.247-22.923-19.259-51.185-30.782-83.32-30.8L138.911 192.082l-13.449 158.32a99 99 0 0 0 3.228 1.848C167.768 373.406 211.883 383.989 256 384c44.117-.011 88.232-10.594 127.309-31.748 1.1-.595 2.166-1.22 3.228-1.848 41.299-24.441 37.088-67.562 28.648-111.841a232 232 0 0 0-.788-3.954" style="fill:#848075"/><path d="M322.783 261.565c-19.142 0-34.573-16.19-33.32-35.596 1.072-16.597 14.57-30.071 31.169-31.118q.278-.017.554-.03c12.346-.579 20.564-13.025 16.03-24.524-15.217-38.599-40.2-75.254-73.672-97.716a128 128 0 0 0-7.543-.233c-20.658.011-39.583 4.94-56.641 13.47-14.27 7.137-27.02 16.957-37.971 28.561-11.784 12.487-30.334 34.374-43.414 60.477-10.021 20.756-17.15 42.671-21.159 63.707-8.44 44.279-12.652 87.4 28.648 111.841a99 99 0 0 0 3.228 1.848 254 254 0 0 0 7.323 3.81 274.6 274.6 0 0 0 55.43 5.678c44.117-.011 88.232-10.594 127.309-31.748 1.1-.595 2.166-1.22 3.228-1.848 13.933-8.245 22.686-18.617 27.844-30.442 7.77-17.81-6.071-37.07-25.481-36.172a35 35 0 0 1-1.562.035" style="fill:#989487"/><path d="M189.589 194.783v.01c-.125-.002-.247-.01-.372-.01-18.412 0-33.391 14.979-33.391 33.391s14.979 33.391 33.391 33.391c.125 0 .247-.008.371-.01v.01c18.237 0 33.021 14.783 33.021 33.021v145.066c0 6.147 4.983 11.13 11.13 11.13h44.522c6.147 0 11.13-4.983 11.13-11.13V294.586c0-55.12-44.683-99.803-99.802-99.803" style="fill:#848075"/><path d="m247.096 407.003-24.487 32.649c0 6.147 4.983 11.13 11.13 11.13h44.522c6.147 0 11.13-4.983 11.13-11.13l-24.487-32.649c-4.452-5.937-13.356-5.937-17.808 0" style="fill:#706b63"/><path d="M215.779 306.087c-6.184-8.115-15.957-13.357-26.733-13.357-.963 0-1.938.042-2.899.124-8.932.766-17.032 4.953-22.809 11.792l-.173.206c-8.004 9.626-.893 24.255 11.627 24.255l28.536-.001c11.246 0 18.654-12.093 13.166-21.91a9 9 0 0 0-.715-1.109" style="fill:#848075"/><path d="M211.395 328.151a271 271 0 0 1-2.094 18.435 247 247 0 0 1-3.532 18.217c-2.888 12.05-6.706 23.924-11.959 35.409-2.638 5.739-5.628 11.38-9.106 16.848-3.494 5.459-7.425 10.773-12.178 15.694-4.766 4.886-10.241 9.494-16.93 12.929-3.306 1.741-6.981 3.07-10.759 4.017-3.833.88-7.82 1.213-11.75 1.037-6.154-.276-10.919-5.469-10.642-11.6.24-5.319 4.196-9.597 9.258-10.456l1.384-.233c1.719-.293 3.354-.745 4.949-1.44 1.586-.786 3.15-1.646 4.659-2.857 3.034-2.321 5.855-5.589 8.37-9.263 5.025-7.463 8.684-16.708 11.271-26.282 2.58-9.626 4.063-19.732 4.757-29.883.317-5.089.434-10.193.376-15.294a227 227 0 0 0-.823-15.28c-1.063-12.309 8.092-23.147 20.448-24.205 12.356-1.06 23.235 8.061 24.298 20.371.105 1.207.11 2.4.024 3.571z" style="fill:#d5d2bd"/><path d="M186.375 320.62c-11.546.57-18.115 4.659-19.763 6.52.014.337.007.671.036 1.011.439 5.074.726 10.173.823 15.28a208 208 0 0 1-.376 15.294c-.695 10.151-2.177 20.256-4.757 29.883-2.587 9.573-6.245 18.818-11.271 26.282-2.515 3.674-5.336 6.942-8.37 9.263-1.51 1.211-3.073 2.071-4.659 2.857-1.594.696-3.23 1.148-4.949 1.44l-1.384.233c-5.208.884-9.245 5.385-9.271 10.917l.014.014c3.77.128 7.584-.199 11.258-1.043 3.778-.948 7.453-2.276 10.759-4.017 6.691-3.435 12.164-8.043 16.931-12.929 4.752-4.92 8.683-10.233 12.178-15.694 3.479-5.468 6.468-11.109 9.106-16.848 5.252-11.487 9.071-23.359 11.959-35.409a248 248 0 0 0 3.532-18.217q.121-.813.238-1.627c1.018-7.13-4.683-13.542-11.877-13.215q-.08 0-.157.005" style="fill:#e7e4cd"/><path d="M296.221 306.087c6.184-8.115 15.957-13.357 26.733-13.357.963 0 1.938.042 2.9.124 8.932.766 17.032 4.953 22.809 11.792l.173.206c8.004 9.626.893 24.255-11.627 24.255l-28.536-.001c-11.246 0-18.654-12.093-13.166-21.91.234-.42.472-.793.714-1.109" style="fill:#848075"/><path d="M300.605 328.151a271 271 0 0 0 2.094 18.435 247 247 0 0 0 3.532 18.217c2.888 12.05 6.706 23.924 11.959 35.409 2.638 5.739 5.628 11.38 9.106 16.848 3.494 5.459 7.425 10.773 12.178 15.694 4.766 4.886 10.241 9.494 16.93 12.929 3.306 1.741 6.981 3.07 10.759 4.017 3.833.88 7.82 1.213 11.75 1.037 6.154-.276 10.919-5.469 10.642-11.6-.24-5.319-4.196-9.597-9.258-10.456l-1.384-.233c-1.719-.293-3.354-.745-4.949-1.44-1.586-.786-3.15-1.646-4.659-2.857-3.034-2.321-5.855-5.589-8.37-9.263-5.025-7.463-8.684-16.708-11.271-26.282-2.58-9.626-4.063-19.732-4.757-29.883a208 208 0 0 1-.376-15.294c.097-5.107.384-10.206.823-15.28 1.063-12.309-8.092-23.147-20.448-24.205-12.356-1.06-23.235 8.061-24.298 20.371-.105 1.207-.11 2.4-.024 3.571z" style="fill:#e7e4cd"/><path d="m380.295 428.682-1.384-.233c-1.719-.292-3.354-.745-4.949-1.44-1.586-.786-3.15-1.646-4.659-2.857-3.034-2.321-5.855-5.589-8.37-9.263-5.025-7.463-8.684-16.708-11.271-26.282-2.58-9.626-4.063-19.732-4.757-29.883a208 208 0 0 1-.376-15.294c.097-5.107.384-10.205.823-15.28 1.063-12.309-8.092-23.147-20.448-24.205-12.356-1.06-23.235 8.061-24.298 20.371-.105 1.207-.11 2.4-.024 3.571l.024.265.018.197c7.347 0 13.595 5.407 14.598 12.686.673 4.887 1.508 9.929 2.142 12.638 2.888 12.051 6.706 23.924 11.959 35.409 2.638 5.739 5.626 11.38 9.106 16.848 3.494 5.459 7.425 10.773 12.178 15.694 4.766 4.886 10.241 9.494 16.931 12.929 3.306 1.741 6.981 3.07 10.759 4.017 3.674.844 7.489 1.171 11.258 1.043l.014-.014c-.029-5.533-4.066-10.033-9.274-10.917" style="fill:#d5d2bd"/><circle cx="322.783" cy="228.174" r="16.696" style="fill:#47423f"/><circle cx="189.217" cy="228.174" r="16.696" style="fill:#47423f"/><path d="M305.435 73.264c-14.404-5.641-29.657-8.736-45.309-9.196l-.132-.004a139 139 0 0 0-3.997-.065c-16.939.009-33.503 3.166-49.231 9.382a8.347 8.347 0 0 0-.67 15.227 75.33 75.33 0 0 1 35.81 38.383c2.365 5.683 7.836 9.355 13.938 9.355h.317c6.102 0 11.572-3.671 13.938-9.354a75.3 75.3 0 0 1 36.01-38.481 8.35 8.35 0 0 0 4.624-7.842 8.36 8.36 0 0 0-5.298-7.405" style="fill:#e7e4cd"/><path d="M305.266 73.198a133 133 0 0 0-11.232-3.807c0 4.008-2.025 7.732-5.363 9.952a92 92 0 0 0-23.653 22.754c-4.445 6.156-13.596 6.148-18.041-.008a92.1 92.1 0 0 0-23.451-22.617c-3.324-2.223-5.337-5.937-5.337-9.935v-.085a134 134 0 0 0-11.252 3.861c-2.455.966-4.418 2.987-5.131 5.528a8.356 8.356 0 0 0 4.29 9.767 75.33 75.33 0 0 1 35.81 38.383c2.365 5.683 7.836 9.355 13.938 9.355h.317c6.102 0 11.572-3.671 13.938-9.354a75.3 75.3 0 0 1 36.01-38.481 8.356 8.356 0 0 0 4.313-9.774c-.718-2.548-2.69-4.577-5.156-5.539" style="fill:#8d472e"/><path d="m260.126 64.069-.132-.004a139 139 0 0 0-3.997-.065c-7.116.003-14.163.57-21.112 1.678v.002c0 .839.408 1.622 1.09 2.113a108 108 0 0 1 9.146 7.374c6.165 5.547 15.528 5.619 21.689.066 2.99-2.695 6.133-5.1 9.422-7.435a2.62 2.62 0 0 0 1.107-2.133 137 137 0 0 0-17.213-1.596" style="fill:#67a0c0"/><path d="M305.435 73.264c-14.404-5.641-29.657-8.736-45.309-9.196l-.132-.004a139 139 0 0 0-3.992-.065v72.348h.159c6.102 0 11.572-3.671 13.938-9.354a75.3 75.3 0 0 1 36.01-38.481 8.348 8.348 0 0 0-.674-15.248" style="opacity:.2;fill:#47423f"/></svg>
+            </div>
+            <div id="p3" class="token">
+                <svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" width="800" height="800" viewBox="0 0 512 512"><path d="M185.494 116.697c-4.383-42.431-19.718-74.13-45.581-94.214C103.851-5.521 60.953.459 59.146.727l-10.35 1.536-2.55 10.147c-.302 1.197-7.307 29.728-1.397 64.231 5.58 32.581 23.931 76.799 79.67 102.437z" style="fill:#d8d9dd"/><path d="M137.617 150.597c-34.454-15.847-55.211-42.167-61.694-78.229-2.934-16.322-2.24-31.234-1.128-40.924 11.554.473 30.146 3.439 46.172 16.018 18.673 14.656 29.891 39.033 33.344 72.456z" style="fill:#d37b93"/><path d="M326.506 116.697c4.383-42.432 19.718-74.131 45.582-94.215C408.149-5.521 451.047.459 452.854.726l10.351 1.535 2.55 10.148c.302 1.197 7.307 29.728 1.396 64.23-5.579 32.58-23.931 76.799-79.67 102.437z" style="fill:#a0a1a5"/><path d="M374.381 150.597c34.454-15.847 55.211-42.167 61.694-78.229 2.934-16.322 2.24-31.233 1.13-40.926-11.554.474-30.147 3.439-46.173 16.019-18.674 14.656-29.892 39.034-33.345 72.456z" style="fill:#9d5b6e"/><path d="M322.25 91.657c43.668 14.947 92.985 54.58 81.727 158.38-4.195 38.688-13.334 61.722-23.917 88.394-4.113 10.366-8.365 21.086-12.684 33.641-2.495 7.256-2.872 28.024-2.343 40.455l.015.67c0 47.04-23.225 70.797-42.71 82.445-22.62 13.521-48.56 16.358-66.339 16.358-17.777 0-43.717-2.838-66.336-16.358-19.484-11.647-42.71-35.404-42.71-82.445l.015-.673c.528-12.428.15-33.197-2.344-40.452-4.318-12.554-8.571-23.274-12.683-33.641-10.583-26.672-19.721-49.706-23.917-88.394-11.258-103.802 38.06-143.434 81.73-158.382 3.323-1.404 30.242-8.172 66.249-8.172 36.004 0 62.639 6.646 66.247 8.174" style="fill:#d8d9dd"/><path d="M147.168 403.807a247 247 0 0 1-.202 8.718l-.015.673c0 47.04 23.225 70.797 42.71 82.445C212.282 509.163 238.222 512 255.999 512c17.779 0 43.719-2.838 66.337-16.358 19.485-11.647 42.71-35.404 42.71-82.445l-.015-.67a245 245 0 0 1-.202-8.722c-26.41-14.242-66.48-22.801-108.832-22.801-42.351.002-82.419 8.561-108.829 22.803" style="fill:#aeadb3"/><path d="M293.981 146.286h-75.963L195.993 0h120.013zM183.267 265.979c0-11.513 9.229-20.835 20.569-20.835 11.355 0 20.582 9.324 20.582 20.835s-9.226 20.843-20.582 20.843c-11.341-.002-20.569-9.333-20.569-20.843M328.731 265.979c0-11.597-9.288-20.998-20.724-20.998-11.45 0-20.738 9.401-20.738 20.998 0 11.596 9.288 20.997 20.738 20.997 11.437 0 20.724-9.401 20.724-20.997M202.095 433.633c0-9.938 7.966-17.986 17.756-17.986 9.802 0 17.767 8.048 17.767 17.986 0 9.937-7.965 17.992-17.767 17.992-9.79 0-17.756-8.055-17.756-17.992M309.903 433.633c0-10.011-8.018-18.126-17.89-18.126-9.884 0-17.902 8.115-17.902 18.126s8.017 18.126 17.902 18.126c9.873-.001 17.89-8.115 17.89-18.126" style="fill:#333"/><path d="M318.693 186.439v31.347h86.879c-.173-11.377-1.198-21.799-2.938-31.347zM308.156 314.171v31.347h69.101c.939-2.39 1.875-4.749 2.802-7.087 3.271-8.244 6.403-16.142 9.295-24.261h-81.199" style="fill:#262626"/><path d="M193.305 186.439h-83.939c-1.74 9.548-2.765 19.969-2.939 31.347h86.878zM131.941 338.432a2614 2614 0 0 1 2.802 7.085h69.099V314.17h-81.197c2.891 8.119 6.024 16.018 9.296 24.262" style="fill:#333"/><path d="m322.228 91.648.021.009a144.698 144.698 0 0 0 0 0zm-.02-.008.007.003zm-.021-.009" style="fill:#bdbdbf"/><path d="M364.978 411.12q.023.672.051 1.319-.026-.645-.051-1.319m-56.97-124.144c-11.45 0-20.738-9.401-20.738-20.997s9.288-20.998 20.738-20.998c11.436 0 20.724 9.401 20.724 20.998-.001 11.596-9.288 20.997-20.724 20.997m10.685-69.19v-31.347h83.941c1.74 9.548 2.765 19.969 2.938 31.347zM302.868 87.258l-8.887 59.027h-37.98L256 381.006c42.353 0 82.422 8.559 108.832 22.801q-.007-.905-.007-1.823c0-11.426.679-24.468 2.551-29.91 3.345-9.723 6.65-18.345 9.881-26.555h-69.1v-31.347h81.199c-2.892 8.12-6.025 16.017-9.295 24.261 10.582-26.672 19.721-49.706 23.917-88.394 1.111-10.238 1.632-19.852 1.627-28.88-.017-33.088-7.095-58.296-18.109-77.494-7.909-13.785-17.849-24.476-28.655-32.752-9.221-7.062-19.076-12.371-28.844-16.355a144 144 0 0 0-7.745-2.9l-.021-.009-.013-.005-.007-.003-.021-.008c-1.824-.749-8.744-2.615-19.322-4.375" style="fill:#a0a1a5"/><path d="M292.014 451.758c-9.884 0-17.902-8.115-17.902-18.126s8.017-18.126 17.902-18.126c9.872 0 17.89 8.115 17.89 18.126s-8.018 18.126-17.89 18.126M256 381.006 255.999 512c17.779 0 43.719-2.838 66.337-16.358 19.485-11.647 42.71-35.404 42.71-82.445l-.015-.67-.003-.089a255.43 255.43 0 0 1-.198-8.633h.001c-26.409-14.241-66.478-22.799-108.831-22.799" style="fill:#818186"/><path d="M316.006 0h-60.005l-.002 146.286h37.982l8.887-59.028z" style="fill:#262626"/><path d="m380.06 338.432-.223.561z" style="fill:#a0a1a5"/></svg>
+            </div>
+
+            <div class="board" id="board"></div>
+
+            <svg class="overlay" width="490" height="350">
+                <line x1="385" y1="315" x2="315" y2="245" stroke="#795548" stroke-width="14" stroke-linecap="round" />
+                <line x1="385" y1="315" x2="315" y2="245" stroke="#fff" stroke-width="14" stroke-dasharray="5,8" opacity="0.6"/>
+                <line x1="35" y1="175" x2="35" y2="105" stroke="#795548" stroke-width="14" stroke-linecap="round" />
+                <line x1="35" y1="175" x2="35" y2="105" stroke="#fff" stroke-width="14" stroke-dasharray="5,8" opacity="0.6"/>
+                <line x1="455" y1="175" x2="455" y2="105" stroke="#795548" stroke-width="14" stroke-linecap="round" />
+                <line x1="455" y1="175" x2="455" y2="105" stroke="#fff" stroke-width="14" stroke-dasharray="5,8" opacity="0.6"/>
+                
+                <path d="M 385 35 Q 350 100 315 175" stroke="#2e7d32" stroke-width="10" fill="none" stroke-linecap="round" stroke-opacity="0.8"/>
+                <circle cx="385" cy="35" r="8" fill="#1b5e20" /> 
+                <path d="M 245 175 Q 280 210 245 245" stroke="#e64a19" stroke-width="10" fill="none" stroke-linecap="round" stroke-opacity="0.8"/>
+                <circle cx="245" cy="175" r="8" fill="#bf360c" />
+                <path d="M 105 105 Q 70 140 105 175" stroke="#333" stroke-width="10" fill="none" stroke-linecap="round" stroke-opacity="0.8"/>
+                <circle cx="105" cy="105" r="8" fill="#000" />
+            </svg>
+        </div>
+
+        <div class="controls">
+            <div class="dice-box" id="diceBtn" onclick="rollDice()">🎲</div>
+            <div class="info-panel">
+                <div class="turn-text">Giliran: <span id="current-player-name" class="turn-highlight" style="color:#FF5722">🐯 Harimau</span></div>
+                <div style="font-size: 14px; color:#666; margin-top:4px;">Klik dadu untuk jalan!</div>
+            </div>
+            <button onclick="resetGame()" style="background:#ff5252; color:white; border:none; padding:8px 15px; border-radius:5px; font-weight:bold; cursor:pointer;">RESET</button>
+        </div>
+    </div>
+
+    <audio src="audio.mp3" controls autoplay loop></audio>
+
+    <div id="quizModal" class="modal-overlay">
+        <div class="modal-box">
+            <span id="quizIcon" class="quiz-animal">🐯</span>
+            <h3>Jawab untuk lanjut!</h3>
+            <div id="quizQuestion" class="quiz-question">5 + 5 = ?</div>
+            <input type="number" id="quizAnswer" class="quiz-input" placeholder="?">
+            <div id="error-msg"></div>
+            <button class="btn-submit" onclick="checkAnswer()">JAWAB</button>
+        </div>
+    </div>
+
+    <div id="successModal" class="modal-overlay" style="background: rgba(255,255,255,0.5);">
+        <div class="success-box">
+            <div class="success-icon">✨</div>
+            <div class="success-text">HEBAT!</div>
+        </div>
+    </div>
+
+    <audio id="bgMusic" loop>
+        <source src="audio.mp3" type="audio/mpeg">
+        Browser Anda tidak mendukung elemen audio.
+    </audio>
+
+<script>
+    const board = document.getElementById('board');
+    const diceBtn = document.getElementById('diceBtn');
+    const nameLabel = document.getElementById('current-player-name');
+    
+    // UI Modal
+    const quizModal = document.getElementById('quizModal');
+    const successModal = document.getElementById('successModal');
+    const quizQuestionEl = document.getElementById('quizQuestion');
+    const quizInput = document.getElementById('quizAnswer');
+    const errorMsg = document.getElementById('error-msg');
+    const quizIcon = document.getElementById('quizIcon');
+
+    // Data Permainan
+    const players = [
+        { id: 0, name: "Harimau", icon: "🐯", color: "#FF5722", pos: 1 },
+        { id: 1, name: "Jerapah", icon: "🦒", color: "#4CAF50", pos: 1 },
+        { id: 2, name: "Gajah", icon: "🐘", color: "#795548", pos: 1 },
+        { id: 3, name: "Zebra", icon: "🦓", color: "#000000", pos: 1 }
+    ];
+
+    let turnIndex = 0; // 0 sampai 3
+    let isMoving = false;
+    let correctAnswer = 0; // Menyimpan jawaban soal matematika saat ini
+
+    // Peta Ular Tangga
+    const shortcuts = {
+        6: { dest: 10, type: 'ladder' },
+        15: { dest: 28, type: 'ladder' },
+        21: { dest: 22, type: 'ladder' },
+        34: { dest: 19, type: 'snake' },
+        18: { dest: 11, type: 'snake' },
+        27: { dest: 16, type: 'snake' }
+    };
+
+    // --- INISIALISASI BOARD ---
+    function initBoard() {
+        board.innerHTML = ""; 
+        const rows = [
+            [29,30,31,32,33,34,35],
+            [28,27,26,25,24,23,22],
+            [15,16,17,18,19,20,21],
+            [14,13,12,11,10,9,8],
+            [1,2,3,4,5,6,7]
+        ];
+
+        let rowIdx = 5;
+        rows.forEach(rowNums => {
+            rowNums.forEach(num => {
+                const cell = document.createElement('div');
+                cell.classList.add('cell');
+                cell.classList.add(rowIdx % 2 === 0 ? 'row-even' : 'row-odd');
+                cell.id = `cell-${num}`;
+                if(num === 1) cell.classList.add('start-cell');
+                cell.innerText = num === 1 ? "START" : num;
+                board.appendChild(cell);
+            });
+            rowIdx--;
+        });
+
+        updateAllPlayerPositions();
+    }
+
+    // --- LOGIKA POSISI & ANIMASI ---
+    function updateAllPlayerPositions() {
+        players.forEach(p => moveTokenVisual(p.id, p.pos, false));
+    }
+
+    function moveTokenVisual(playerId, cellNum, animate = true) {
+        const token = document.getElementById(`p${playerId}`);
+        const targetCell = document.getElementById(`cell-${cellNum}`);
+        
+        if(!targetCell) return;
+
+        // Hitung posisi dasar cell
+        let left = targetCell.offsetLeft;
+        let top = targetCell.offsetTop;
+
+        // Offset agar 4 binatang tidak bertumpuk di satu kotak
+        // Kita geser sedikit berdasarkan ID pemain
+        const offset = 15; // pixel
+        if (playerId === 0) { left += 5; top += 5; }             // Kiri Atas
+        if (playerId === 1) { left += 35; top += 5; }            // Kanan Atas
+        if (playerId === 2) { left += 5; top += 35; }            // Kiri Bawah
+        if (playerId === 3) { left += 35; top += 35; }           // Kanan Bawah
+
+        if(!animate) token.style.transition = 'none';
+        else token.style.transition = 'top 0.4s ease-out, left 0.4s ease-out';
+
+        token.style.left = `${left}px`;
+        token.style.top = `${top}px`;
+    }
+
+    // --- LOGIKA PERMAINAN ---
+    async function rollDice() {
+        if (isMoving) return;
+        isMoving = true;
+
+        const player = players[turnIndex];
+
+        // Animasi Dadu
+        diceBtn.classList.add('shaking');
+        diceBtn.innerText = "🎲";
+        await new Promise(r => setTimeout(r, 600));
+        
+        const diceVal = Math.floor(Math.random() * 6) + 1;
+        diceBtn.classList.remove('shaking');
+        diceBtn.innerText = diceVal;
+
+        // Hitung target
+        let nextPos = player.pos + diceVal;
+        if (nextPos > 35) {
+            alert("Kelebihan langkah! Tunggu giliran depan.");
+            nextTurn();
+            return;
+        }
+
+        // Jalan Step-by-Step
+        for (let i = player.pos + 1; i <= nextPos; i++) {
+            player.pos = i;
+            moveTokenVisual(turnIndex, i, true);
+            await new Promise(r => setTimeout(r, 400));
+        }
+
+        // Cek Ular / Tangga
+        if (shortcuts[player.pos]) {
+            await new Promise(r => setTimeout(r, 300));
+            player.pos = shortcuts[player.pos].dest;
+            moveTokenVisual(turnIndex, player.pos, true);
+        }
+
+        // Cek Menang
+        if (player.pos === 35) {
+            setTimeout(() => alert(`SELAMAT! ${player.name} MENANG! 🎉`), 500);
+            return; // Game over
+        }
+
+        // --- TRIGGER MATH QUIZ SETIAP BERHENTI ---
+        setTimeout(() => {
+            showMathQuiz();
+        }, 500);
+    }
+
+    // --- LOGIKA MATH QUIZ ---
+    function generateQuestion() {
+        const ops = ['+', '-', 'x', ':'];
+        const op = ops[Math.floor(Math.random() * ops.length)];
+        let a, b;
+
+        // Pastikan angka mudah dan bulat
+        if (op === '+') {
+            a = Math.floor(Math.random() * 20) + 1;
+            b = Math.floor(Math.random() * 20) + 1;
+            correctAnswer = a + b;
+        } else if (op === '-') {
+            a = Math.floor(Math.random() * 20) + 5;
+            b = Math.floor(Math.random() * a); // Agar hasil tidak negatif
+            correctAnswer = a - b;
+        } else if (op === 'x') {
+            a = Math.floor(Math.random() * 10) + 1;
+            b = Math.floor(Math.random() * 10) + 1;
+            correctAnswer = a * b;
+        } else if (op === ':') {
+            // Trik pembagian: Bikin perkalian dulu, lalu balik jadi soal pembagian
+            // Contoh: 5 * 4 = 20. Soal: 20 : 5 = ?
+            let res = Math.floor(Math.random() * 10) + 1;
+            let div = Math.floor(Math.random() * 10) + 1;
+            a = res * div;
+            b = div;
+            correctAnswer = res;
+        }
+
+        return `${a} ${op} ${b} = ?`;
+    }
+
+    function showMathQuiz() {
+        const player = players[turnIndex];
+        quizIcon.innerText = player.icon;
+        quizQuestionEl.innerText = generateQuestion();
+        quizInput.value = "";
+        errorMsg.innerText = "";
+        quizModal.style.display = "flex";
+        quizInput.focus();
+    }
+
+    function checkAnswer() {
+        const userAns = parseInt(quizInput.value);
+        
+        if (userAns === correctAnswer) {
+            // BENAR
+            quizModal.style.display = "none";
+            
+            // Tampilkan Popup Sukses
+            successModal.style.display = "flex";
+            setTimeout(() => {
+                successModal.style.display = "none";
+                nextTurn(); // Baru ganti giliran
+            }, 1500);
+
+        } else {
+            // SALAH
+            errorMsg.innerText = "Salah! Coba hitung lagi ya..";
+            quizInput.value = "";
+            quizInput.focus();
+            // Modal TIDAK ditutup
+        }
+    }
+
+    // --- GANTI GILIRAN ---
+    function nextTurn() {
+        turnIndex++;
+        if (turnIndex >= players.length) turnIndex = 0;
+        
+        const nextP = players[turnIndex];
+        nameLabel.innerText = `${nextP.icon} ${nextP.name}`;
+        nameLabel.style.color = nextP.color;
+        
+        diceBtn.innerText = "🎲";
+        isMoving = false;
+    }
+
+    // --- RESET ---
+    function resetGame() {
+        players.forEach(p => p.pos = 1);
+        updateAllPlayerPositions();
+        turnIndex = 0;
+        nameLabel.innerText = "🐯 Harimau";
+        nameLabel.style.color = "#FF5722";
+        isMoving = false;
+        diceBtn.innerText = "🎲";
+        quizModal.style.display = "none";
+    }
+
+    // Support Enter Key di Input Quiz
+    quizInput.addEventListener("keypress", function(event) {
+        if (event.key === "Enter") {
+            checkAnswer();
+        }
+    });
+
+    initBoard();
+
+</script>
+</body>
+</html>
