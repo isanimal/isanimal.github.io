@@ -1,161 +1,277 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>Document</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
 
-		<style>
-			* {
-				margin: 0;
-				padding: 0;
-				box-sizing: border-box;
-				/* overflow-x: hidden; */
-			}
+    <style>
+      body {
+        background: linear-gradient(to bottom right, #b2bfd4, #f1dd76);
+      }
 
-			.hero {
-				width: 100dvw;
-				min-height: 100dvh;
-			}
+      .bg-mtk-2 {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: auto;
+        z-index: -1;
+        opacity: 0.2;
+      }
 
-			.container {
-				position: relative;
-				width: 100%;
-				min-height: 80dvh; /* to enable scrolling */
-				background-color: #f0f0f0;
-			}
+      .bg-mtk-2:nth-child(2) {
+        top: 500px;
+        opacity: 0.3;
+      }
 
-			.area-navbar {
-				position: fixed;
-				top: 0;
-				left: 0;
-				width: 100%;
-				min-height: 60px;
-				color: white;
-				display: flex;
-				justify-content: space-around;
-				align-items: center;
-				padding: 0 20px;
-				z-index: 1000;
-			}
-			.navbar {
-				height: 70px;
-				display: flex;
-				justify-content: space-around;
-				align-items: center;
-				width: 80%;
-				background-color: #cc9744;
-				border-radius: 64px;
-				margin-top: 30px;
-			}
-			.navbar-logo {
-				font-size: 24px;
-				font-weight: bold;
-				position: relative;
-				left: -300px;
-				background-color: #6666;
-				padding: 30px;
-				border-radius: 100%;
-			}
-			.navbar-actions {
-				display: flex;
-				gap: 40px;
-				font-size: 20px;
-				font-weight: 500;
-				position: relative;
-				right: -200px;
-			}
-			.area-image {
-				display: flex;
-				justify-content: center;
-				width: 100%;
-			}
-			.img-banner {
-				width: 80%;
-				max-width: 2000px;
-				right: -200px;
-				justify-content: center;
-				position: relative;
-				top: -200px;
-				z-index: 1;
-			}
-			.ornamen {
-				top: 0;
-				padding: 20px;
-				position: relative;
-				width: 100%;
-				height: 60%;
-			}
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        overflow-x: hidden;
+      }
 
-			.ornamen-1 {
-				position: absolute;
-				top: -1200px;
-				right: 70%;
-				rotate: 110deg;
-			}
+      .hero {
+        width: 100dvw;
 
-			.ornamen-1 img {
-				width: 1200px;
-			}
+      }
 
-			.ornamen-2 {
-				position: absolute;
-				top: -2000px;
-				justify-content: center;
-			}
+      .container {
+        position: relative;
+        width: 100%;
+        /* min-height: 40dvh; to enable scrolling */
+        /* background-color: #f0f0f0; */
+      }
 
-			.ornamen-2 img {
-				width: 100%;
-			}
+      .area-navbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        min-height: 60px;
+        color: white;
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        padding: 0 20px;
+        z-index: 1000;
+      }
+      .navbar {
+        height: 70px;
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        width: 80%;
+        background-color: #cc9744;
+        border-radius: 64px;
+        margin-top: 30px;
+      }
+      .navbar-logo {
+        font-size: 24px;
+        font-weight: bold;
+        position: relative;
+        left: -300px;
+        background-color: #6666;
+        padding: 30px;
+        border-radius: 100%;
+      }
+      .navbar-actions {
+        display: flex;
+        gap: 40px;
+        font-size: 20px;
+        font-weight: 500;
+        position: relative;
+        right: -200px;
+      }
+      .area-image {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+      }
+      .img-banner {
+        width: 80%;
+        max-width: 2000px;
+        right: -200px;
+        justify-content: center;
+        position: relative;
+        top: -150px;
+        z-index: 1;
+        /* background-color: aquamarine; */
+      }
 
-			.ornamen-3 {
-				position: absolute;
-				justify-content: center;
-				margin-top: -1400px;
-				left: 1400px;
-				rotate: 360deg;
-			}
+      .hero-ornamen {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+      }
 
-			.ornamen-3 img {
-				width: 1200px;
+      .ornament-1 {
+        position: absolute;
+        top: -600px;
+        left: 0;
+        width: 100%;
+        height: auto;
+      }
 
-			}
+      .ornamen-pinggir {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: auto;
+        height: 100%;
+      }
 
-		</style>
-	</head>
-	<body>
-		<section id="hero" class="hero">
-			<nav class="area-navbar">
-				<div class="navbar">
-					<div class="navbar-logo">logo</div>
-					<div class="navbar-actions">
-						<a class="nav-btn" href="#">Quiz</a>
-						<a class="nav-btn" href="#">Materi</a>
-						<a class="nav-btn" href="#">About Me</a>
-					</div>
-				</div>
-			</nav>
-			<div class="container">
-					<img class="img-banner" src="asset/template matematika.png" alt="" />
-				</div>
+      .leaf {
+        position: absolute;
+        bottom: 200px;
+        right: 900px;
+        width: auto;
+        /* height: 100%; */
+        rotate: 120deg;
+      }
 
-				<div class="ornamen">
-					<div class="ornamen-1">
-						<img src="/asset/background-leaf-pinggir.png" alt="" />
-					</div>
-					<div class="ornamen-2">
-						<img src="asset/leaf header.png" alt="">
-					</div>
-					<div class="ornamen-3">
-						<img src="/asset/climber header.png" alt="">
-					</div>
-				
-				<div class="text-main">
-					<img class="text-latar-belakang" src="/asset/branch latar belakang.png" alt="">
-					<img src="/asset/background text.png" alt="">
-				</div>
-				</div>
-			</div>
-		</section>
-	</body>
+      .climber {
+        position: absolute;
+        bottom: 90px;
+        right: -700px;
+        /* width: auto; */
+        height: 100%;
+      }
+
+      .latar-belakang {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .branch-latar-belakng {
+        position: relative;
+        right: 500px;
+      }
+
+      .bg-text-latar-belakang {
+        position: relative;
+        top: -350px;
+        left: 0;
+        width: 80%;
+        /* height: auto; */
+        z-index: 0;
+      }
+
+      .cara-bermain {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .branch-cara-bermain {
+        position: relative;
+        right: 500px;
+        top: -50px;
+        right: -1021px;
+      }
+
+      .bg-text-cara-bermain {
+        position: relative;
+        top: -220px;
+        left: 100px;
+        width: 90%;
+        height: auto;
+      }
+
+      .footer {
+        width: 100%;
+        height: 30dvh;
+      }
+
+      .footer-img {
+        width: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <section id="hero" class="hero">
+      <nav class="area-navbar">
+        <div class="navbar">
+          <div class="navbar-logo">logo</div>
+          <div class="navbar-actions">
+            <a class="nav-btn" href="#">Quiz</a>
+            <a class="nav-btn" href="#">Materi</a>
+            <a class="nav-btn" href="#">About Me</a>
+          </div>
+        </div>
+      </nav>
+      <div class="container">
+        <img
+          src="asset/background ke 2 matematika.png"
+          class="bg-mtk-2"
+          alt=""
+        />
+
+        <img class="img-banner" src="asset/template matematika.png" alt="" />
+        <div class="hero-ornamen">
+          <img class="ornament-1" src="/asset/leaf header.png" alt="" />
+          <div class="ornament-pinggir">
+            <img class="leaf" src="/asset/background-leaf-pinggir.png" alt="" />
+            <img class="climber" src="/asset/climber header.png" alt="" />
+          </div>
+        </div>
+      </div>
+
+      <div class="container">
+        <img
+          src="asset/background ke 2 matematika.png"
+          class="bg-mtk-2"
+          alt=""
+        />
+
+        <img
+          src="asset/background ke 2 matematika.png"
+          class="bg-mtk-2"
+          alt=""
+        />
+        <div class="latar-belakang">
+          <img
+            class="branch-latar-belakng"
+            src="/asset/branch latar belakang.png"
+            alt=""
+          />
+          <img
+            class="bg-text-latar-belakang"
+            src="/asset/background text.png"
+            alt=""
+          />
+        </div>
+      </div>
+      <div class="container">
+        <img
+          src="asset/background ke 2 matematika.png"
+          class="bg-mtk-2"
+          alt=""
+        />
+
+        <div class="cara-main">
+          <img
+            class="branch-cara-bermain"
+            src="/asset/branch cara bermain.png"
+            alt=""
+          />
+          <img
+            class="bg-text-cara-bermain"
+            src="/asset/bg text cara bermain.png"
+            alt=""
+          />
+        </div>
+      </div>
+    </section>
+    <section id="footer">
+      <div class="footer">
+        <img class="footer-img" src="/asset/foooter home.png" alt="" />
+      </div>
+    </section>
+  </body>
 </html>
